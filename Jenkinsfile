@@ -15,6 +15,7 @@ pipeline {
                 sh 'echo "PATH: $PATH"'
                 sh 'which gradle'
             }
+        }
         stage('Build'){
             steps{
                 sh '''
