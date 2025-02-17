@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'DEV' }
+    agent { node 'Vagrant-AWS' }
 
     stages {
         stage('Hello') {
