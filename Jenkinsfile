@@ -11,7 +11,7 @@ pipeline {
         stage('Build'){
             steps{
                 sh '''
-                    gradle -v
+                    /usr/local/gradle/bin/gradle -v
                 '''
             }
         }
