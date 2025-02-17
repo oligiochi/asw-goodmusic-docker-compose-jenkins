@@ -13,7 +13,7 @@ pipeline {
                 sh 'echo "Running on $(hostname)"'
                 sh 'whoami'  // Mostra l'utente con cui gira il job
                 sh 'echo "PATH: $PATH"'
-                sh 'which gradle'
+                sh 'which gradle || echo "Gradle non trovato!"'
             }
         }
         stage('Build'){
