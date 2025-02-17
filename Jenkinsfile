@@ -8,5 +8,12 @@ pipeline {
                 sh 'echo ciao mondo'
             }
         }
+        stage('Build'){
+            steps{
+                sh '''
+                    gradle build
+                '''
+            }
+        }
     }
 }
