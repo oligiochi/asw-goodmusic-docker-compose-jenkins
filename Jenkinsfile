@@ -1,6 +1,11 @@
 pipeline {
     agent { node 'AWS-Vagrant' }
 
+    environment {
+        // Aggiungi il percorso di Gradle al PATH globale per tutta la pipeline
+        PATH = "/usr/local/gradle/bin:$PATH"
+    }
+
     stages {
         stage('Hello') {
             steps {
@@ -13,17 +18,11 @@ pipeline {
                 sh 'echo "Running on $(hostname)"'
                 sh 'whoami'  // Mostra l'utente con cui gira il job
                 sh 'echo "PATH: $PATH"'
-                sh '''
-                if ! which gradle > /dev/null; then
-                        export PATH=$PATH:/usr/local/gradle/bin
-                        echo "Gradle aggiunto al PATH"
-                    fi
-                '''
-                sh 'which gradle'
+                sh 'which gradle || echo "Gradle non trovato!"'
             }
         }
-        stage('Build'){
-            steps{
+        stage('Build') {
+            steps {
                 sh '''
                     gradle -v
                 '''
