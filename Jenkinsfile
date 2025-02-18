@@ -25,6 +25,7 @@ pipeline {
             steps {
                 sh '''
                     gradle -v
+                    gradle build
                 '''
             }
         }
