@@ -40,5 +40,15 @@ pipeline {
                 sh 'echo "finish docker build"'
             }
         }
+        stage('Docker_compose_up'){
+            timeout(time: 5, unit: 'MINUTES') {
+                sh 'echo "run app"'
+                sh 'docker compose up'
+            }
+        }
+        stage('Docker_compose_down'){
+            sh 'echo "stop app"'
+            sh 'docker compose down'
+        }
     }
 }
