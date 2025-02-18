@@ -1,5 +1,5 @@
 pipeline {
-    agent { node 'Vagrant-AWS' }
+    agent { node 'AWS-Vagrant' }
 
     stages {
         stage('Hello') {
