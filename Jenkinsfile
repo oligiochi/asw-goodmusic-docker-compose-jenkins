@@ -40,18 +40,28 @@ pipeline {
                 sh 'echo "finish docker build"'
             }
         }
-        stage('Docker_compose_up'){
-            timeout(time: 5, unit: 'MINUTES') {
-                steps{
-                    sh 'echo "run app"'
-                    sh 'docker compose up'
+        stage('Start Docker Compose') {
+            parallel {
+                stage('Docker_compose_up') {
+                    steps {
+                        sh 'echo "Run app in interactive mode"'
+                        sh 'docker compose up'  // Avvia in modalità interattiva senza -d
+                    }
                 }
             }
         }
-        stage('Docker_compose_down'){
-            steps{
-                sh 'echo "stop app"'
-                sh 'docker compose down'
+
+        stage('Wait for the app to start') {
+            steps {
+                sh 'echo "Waiting for the app to start..."'
+                sleep time: 30, unit: 'SECONDS'  // Attende 30 secondi
+            }
+        }
+
+        stage('Docker_compose_down') {
+            steps {
+                sh 'echo "Stop app"'
+                sh 'docker compose down'  // Ferma i container
             }
         }
     }
