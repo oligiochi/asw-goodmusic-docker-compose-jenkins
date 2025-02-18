@@ -55,6 +55,7 @@ pipeline {
             steps {
                 sh 'echo "Waiting for the app to start..."'
                 sleep time: 30, unit: 'SECONDS'  // Attende 30 secondi
+                //vedere stato servizio
             }
         }
 
