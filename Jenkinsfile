@@ -23,7 +23,6 @@ pipeline {
                         sh 'whoami'  // Mostra l'utente con cui gira il job
                         sh 'echo "PATH: $PATH"'
                         sh 'which gradle || echo "Gradle non trovato!"'
-                        sh 'which docker || echo "Gradle non trovato!"'
                     }
                 }
 
@@ -50,7 +49,23 @@ pipeline {
         }
 
         stage('Docker'){
+            agent{
+                docker{
+                    image 'docker:dind'  // Docker-in-Docker
+                    args '--privileged'  // Necessario per il demone Docker
+                }
+            }
+            environment {
+                DOCKER_HOST = "tcp://localhost:2375"
+            }
+
             stages{
+                stage('Docker test') {
+                    steps {
+                        sh 'docker --version'  // Controlla che Docker funzioni
+                        sh 'docker-compose --version'  // Verifica Docker Compose
+                    }
+
                 stage('Docker Compose Up') {
                     steps {
                         sh 'docker compose up -d'
@@ -77,7 +92,7 @@ pipeline {
                             }
                         }
                     
-                        stage('Consul_funcition'){
+                        stage('Consul_check'){
                             steps {
                                 script {
                                     def maxRetries = 30
