@@ -59,12 +59,13 @@ pipeline {
                 DOCKER_HOST = "tcp://localhost:2375"
             }
 
-            stages{
+            stages {
+
                 stage('Docker test') {
                     steps {
                         sh 'docker --version'  // Controlla che Docker funzioni
                         sh 'docker-compose --version'  // Verifica Docker Compose
-                    }
+                }
 
                 stage('Docker Compose Up') {
                     steps {
@@ -72,7 +73,7 @@ pipeline {
                     }
                 }
 
-                stage('Wait for Consul Services to be Healthy') {
+                /*stage('Wait for Consul Services to be Healthy') {
                     environment {
                         CONSUL_URL = "http://localhost:8500/v1/health/state/any"
                     }
@@ -117,7 +118,37 @@ pipeline {
                             }
                         }
                     }
+                }*/
+
+                stage('Wait for Consul Services to be Healthy') {
+                    environment {
+                        CONSUL_URL = "http://localhost:8500/v1/health/state/any"
+                    }
+                    steps {
+                        script {
+                            def maxRetries = 30
+                            def retryInterval = 10
+                            def attempt = 0
+
+                            while (attempt < maxRetries) {
+                                def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
+                                if (!response.contains('"Status":"critical"')) {
+                                    echo "✅ All services are healthy!"
+                                    break
+                                } else {
+                                    echo "⚠️ Some services are still critical. Retrying in ${retryInterval} seconds..."
+                                    attempt++
+                                    sleep retryInterval
+                                }
+                            }
+
+                            if (attempt == maxRetries) {
+                                error("❌ Services did not reach passing state within the timeout period!")
+                            }
+                        }
+                    }
                 }
+
 
                 stage('Test'){
                     steps{
@@ -131,8 +162,9 @@ pipeline {
                         sh 'docker compose down'  // Ferma i container
                     }
                 }
+
+                }
             }
         }
     }
-}
 }
