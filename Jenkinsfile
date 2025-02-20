@@ -46,17 +46,20 @@ pipeline {
             }
         }
 
-        /*
-        stage('Start Docker Compose') {
-            parallel {
-                stage('Docker_compose_up') {
-                    steps {
-                        sh 'echo "Run app in interactive mode"'
-                        sh 'docker compose up -d'  // Avvia in modalità interattiva senza -d
-                    }
+        stage('Docker Compose Up') {
+            steps {
+                script {
+                    def compose = docker.compose(
+                        file: 'docker-compose.yml',
+                        pull: true, // Se vuoi forzare il pull delle immagini
+                        removeContainers: true
+                    )
+                    compose.up()
                 }
             }
         }
+
+        /*
 
         stage('Wait for the app to start') {
             steps {
