@@ -41,9 +41,6 @@ pipeline {
                             args '--privileged'
                         }
                     }
-                    environment {
-                        DOCKER_HOST = "tcp://localhost:2375"
-                    }
                     stages {
                         stage('Docker test') {
                             steps {
