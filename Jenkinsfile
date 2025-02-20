@@ -84,6 +84,12 @@ pipeline {
                     }
                 }
 
+                stage('Test'){
+                    steps{
+                        sh '''echo $(curl -s localhost:8080/recensioni/recensioni) | jq .'''
+                    }
+                }
+
                 stage('Docker_compose_down') {
                     steps {
                         sh 'echo "Stop app"'
