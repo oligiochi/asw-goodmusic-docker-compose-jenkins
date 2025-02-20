@@ -1,31 +1,21 @@
 pipeline {
     agent any
-    
-    stages {
-        stage('Hello') {
-            steps {
-                echo 'Hello World'
-                sh 'echo ciao mondo'
-            }
-        }
 
-        stage('Vagrant'){
-            agent { node 'AWS-Vagrant' }
+    stages {
+        stage('Vagrant and Docker Operations') {
+            agent { label 'AWS-Vagrant' }
             environment {
-                // Aggiungi il percorso di Gradle al PATH globale per tutta la pipeline
                 PATH = "/usr/local/gradle/bin:$PATH"
             }
-
             stages {
                 stage('Check Env') {
                     steps {
                         sh 'echo "Running on $(hostname)"'
-                        sh 'whoami'  // Mostra l'utente con cui gira il job
+                        sh 'whoami'
                         sh 'echo "PATH: $PATH"'
                         sh 'which gradle || echo "Gradle non trovato!"'
                     }
                 }
-
                 stage('Build_Gradle') {
                     steps {
                         sh 'gradle -v'
@@ -34,9 +24,8 @@ pipeline {
                         sh 'echo "finish gradle build"'
                     }
                 }
-
-                stage('Build_Images'){
-                    steps{
+                stage('Build_Images') {
+                    steps {
                         sh 'echo "start docker build"'
                         sh 'docker build --rm -t connessioni ./connessioni'
                         sh 'docker build --rm -t recensioni ./recensioni'
@@ -45,55 +34,32 @@ pipeline {
                         sh 'echo "finish docker build"'
                     }
                 }
-            }
-        }
-
-        stage('Docker'){
-            agent{
-                docker{
-                    image 'docker:dind'  // Docker-in-Docker
-                    args '--privileged'  // Necessario per il demone Docker
-                }
-            }
-            environment {
-                DOCKER_HOST = "tcp://localhost:2375"
-            }
-
-            stages {
-
-                stage('Docker test') {
-                    steps {
-                        sh 'docker --version'  // Controlla che Docker funzioni
-                        sh 'docker-compose --version'  // Verifica Docker Compose
-                }
-
-                stage('Docker Compose Up') {
-                    steps {
-                        sh 'docker compose up -d'
+                stage('Docker Operations') {
+                    agent {
+                        docker {
+                            image 'docker:dind'
+                            args '--privileged'
+                        }
                     }
-                }
-
-                /*stage('Wait for Consul Services to be Healthy') {
                     environment {
-                        CONSUL_URL = "http://localhost:8500/v1/health/state/any"
+                        DOCKER_HOST = "tcp://localhost:2375"
                     }
-
-                    stages{
-                        stage('Consul_funcition'){
+                    stages {
+                        stage('Docker test') {
                             steps {
-                                script {
-                                    def checkConsulHealth = { ->
-                                        def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
-                                        return !response.contains('"Status":"critical"')
-                                    }
-
-                                    // Salviamo la funzione come variabile globale
-                                    this.checkConsulHealth = checkConsulHealth
-                                }
+                                sh 'docker --version'
+                                sh 'docker-compose --version'
                             }
                         }
-                    
-                        stage('Consul_check'){
+                        stage('Docker Compose Up') {
+                            steps {
+                                sh 'docker compose up -d'
+                            }
+                        }
+                        stage('Wait for Consul Services to be Healthy') {
+                            environment {
+                                CONSUL_URL = "http://localhost:8500/v1/health/state/any"
+                            }
                             steps {
                                 script {
                                     def maxRetries = 30
@@ -101,7 +67,8 @@ pipeline {
                                     def attempt = 0
 
                                     while (attempt < maxRetries) {
-                                        if (checkConsulHealth()) {
+                                        def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
+                                        if (!response.contains('"Status":"critical"')) {
                                             echo "✅ All services are healthy!"
                                             break
                                         } else {
@@ -117,52 +84,18 @@ pipeline {
                                 }
                             }
                         }
-                    }
-                }*/
-
-                stage('Wait for Consul Services to be Healthy') {
-                    environment {
-                        CONSUL_URL = "http://localhost:8500/v1/health/state/any"
-                    }
-                    steps {
-                        script {
-                            def maxRetries = 30
-                            def retryInterval = 10
-                            def attempt = 0
-
-                            while (attempt < maxRetries) {
-                                def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
-                                if (!response.contains('"Status":"critical"')) {
-                                    echo "✅ All services are healthy!"
-                                    break
-                                } else {
-                                    echo "⚠️ Some services are still critical. Retrying in ${retryInterval} seconds..."
-                                    attempt++
-                                    sleep retryInterval
-                                }
+                        stage('Test') {
+                            steps {
+                                sh 'echo $(curl -s localhost:2200/recensioni/recensioni) | jq .'
                             }
-
-                            if (attempt == maxRetries) {
-                                error("❌ Services did not reach passing state within the timeout period!")
+                        }
+                        stage('Docker_compose_down') {
+                            steps {
+                                sh 'echo "Stop app"'
+                                sh 'docker compose down'
                             }
                         }
                     }
-                }
-
-
-                stage('Test'){
-                    steps{
-                        sh '''echo $(curl -s localhost:2200/recensioni/recensioni) | jq .'''
-                    }
-                }
-
-                stage('Docker_compose_down') {
-                    steps {
-                        sh 'echo "Stop app"'
-                        sh 'docker compose down'  // Ferma i container
-                    }
-                }
-
                 }
             }
         }
