@@ -58,27 +58,47 @@ pipeline {
                 }
 
                 stage('Wait for Consul Services to be Healthy') {
-                    steps {
-                        script {
-                            def maxRetries = 30 // Numero massimo di tentativi (ogni tentativo = 10s)
-                            def retryInterval = 10 // Intervallo tra i tentativi (in secondi)
-                            def attempt = 0
+                    environment {
+                        CONSUL_URL = "http://localhost:8500/v1/health/state/any"
+                    }
 
-                            while (attempt < maxRetries) {
-                                def response = sh(script: "curl -s http://localhost:8500/v1/health/state/critical", returnStdout: true).trim()
-                                
-                                if (response == "[]") {
-                                    echo "✅ All services are healthy!"
-                                    break
-                                } else {
-                                    echo "⚠️ Some services are still in critical state. Retrying in ${retryInterval} seconds..."
-                                    attempt++
-                                    sleep retryInterval
+                    stages{
+                        stage('Consul_funcition'){
+                            steps {
+                                script {
+                                    def checkConsulHealth = { ->
+                                        def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
+                                        return !response.contains('"Status":"critical"')
+                                    }
+
+                                    // Salviamo la funzione come variabile globale
+                                    this.checkConsulHealth = checkConsulHealth
                                 }
                             }
+                        }
+                    
+                        stage('Consul_funcition'){
+                            steps {
+                                script {
+                                    def maxRetries = 30
+                                    def retryInterval = 10
+                                    def attempt = 0
 
-                            if (attempt == maxRetries) {
-                                error("❌ Services did not recover within the timeout period!")
+                                    while (attempt < maxRetries) {
+                                        if (checkConsulHealth()) {
+                                            echo "✅ All services are healthy!"
+                                            break
+                                        } else {
+                                            echo "⚠️ Some services are still critical. Retrying in ${retryInterval} seconds..."
+                                            attempt++
+                                            sleep retryInterval
+                                        }
+                                    }
+
+                                    if (attempt == maxRetries) {
+                                        error("❌ Services did not reach passing state within the timeout period!")
+                                    }
+                                }
                             }
                         }
                     }
