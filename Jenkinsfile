@@ -86,7 +86,7 @@ pipeline {
 
                 stage('Test'){
                     steps{
-                        sh '''echo $(curl -s localhost:8080/recensioni/recensioni) | jq .'''
+                        sh '''echo $(curl -s localhost:2200/recensioni/recensioni) | jq .'''
                     }
                 }
 
