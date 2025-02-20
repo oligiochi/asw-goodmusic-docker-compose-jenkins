@@ -48,24 +48,34 @@ pipeline {
 
         stage('Docker Compose Up') {
             steps {
-                script {
-                    def compose = docker.compose(
-                        file: 'docker-compose.yml',
-                        pull: true, // Se vuoi forzare il pull delle immagini
-                        removeContainers: true
-                    )
-                    compose.up()
-                }
+                sh 'docker compose up -d'
             }
         }
-
-        /*
-
-        stage('Wait for the app to start') {
+        
+        stage('Wait for Consul Services to be Healthy') {
             steps {
-                sh 'echo "Waiting for the app to start..."'
-                sleep time: 30, unit: 'SECONDS'  // Attende 30 secondi
-                //vedere stato servizio
+                script {
+                    def maxRetries = 30 // Numero massimo di tentativi (ogni tentativo = 10s)
+                    def retryInterval = 10 // Intervallo tra i tentativi (in secondi)
+                    def attempt = 0
+
+                    while (attempt < maxRetries) {
+                        def response = sh(script: "curl -s http://localhost:8500/v1/health/state/critical", returnStdout: true).trim()
+                        
+                        if (response == "[]") {
+                            echo "✅ All services are healthy!"
+                            break
+                        } else {
+                            echo "⚠️ Some services are still in critical state. Retrying in ${retryInterval} seconds..."
+                            attempt++
+                            sleep retryInterval
+                        }
+                    }
+
+                    if (attempt == maxRetries) {
+                        error("❌ Services did not recover within the timeout period!")
+                    }
+                }
             }
         }
 
@@ -73,7 +83,6 @@ pipeline {
             steps {
                 sh 'echo "Stop app"'
                 sh 'docker compose down'  // Ferma i container
-            }
-        }*/
+        }
     }
 }
