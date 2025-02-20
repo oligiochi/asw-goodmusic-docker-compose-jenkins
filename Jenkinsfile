@@ -51,7 +51,7 @@ pipeline {
                 sh 'docker compose up -d'
             }
         }
-        
+
         stage('Wait for Consul Services to be Healthy') {
             steps {
                 script {
@@ -83,6 +83,7 @@ pipeline {
             steps {
                 sh 'echo "Stop app"'
                 sh 'docker compose down'  // Ferma i container
+            }
         }
     }
 }
