@@ -32,15 +32,13 @@ pipeline {
                 stage('Build_Images') {
                     steps {
                         sh 'echo "start docker build"'
-
                         sh 'docker build --rm -t localhost:5000/connessioni ./connessioni'
                         sh 'docker build --rm -t localhost:5000/recensioni ./recensioni'
                         sh 'docker build --rm -t localhost:5000/recensioni-seguite ./recensioni-seguite'
                         sh 'docker build --rm -t localhost:5000/apigateway ./api-gateway'
-
                         sh 'echo "finish docker build"'
-
                     }
+                }
                 stage('Push_Images'){
                     steps{
                         sh 'docker push localhost:5000/connessioni'
@@ -48,7 +46,6 @@ pipeline {
                         sh 'docker push localhost:5000/recensioni-seguite'
                         sh 'docker push localhost:5000/apigateway'
                     }
-                }
                 }
                 stage('Docker Operations') {
                     agent {
