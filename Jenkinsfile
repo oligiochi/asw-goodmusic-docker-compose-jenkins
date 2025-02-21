@@ -46,6 +46,7 @@ pipeline {
                             steps {
                                 sh 'docker --version'
                                 sh 'docker-compose --version'
+                                sh 'docker images'
                             }
                         }
                         stage('Docker Compose Up') {
