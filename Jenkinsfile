@@ -2,6 +2,11 @@ pipeline {
     agent any
 
     stages {
+        stage('Generate immage repository'){
+            steps{
+                sh 'docker run -d -p 5000:5000 --name registry registry:2'
+            }
+        }
         stage('Vagrant and Docker Operations') {
             agent { label 'AWS-Vagrant' }
             environment {
@@ -27,12 +32,23 @@ pipeline {
                 stage('Build_Images') {
                     steps {
                         sh 'echo "start docker build"'
-                        sh 'docker build --rm -t connessioni ./connessioni'
-                        sh 'docker build --rm -t recensioni ./recensioni'
-                        sh 'docker build --rm -t recensioni-seguite ./recensioni-seguite'
-                        sh 'docker build --rm -t apigateway ./api-gateway'
+
+                        sh 'docker build --rm -t localhost:5000/connessioni ./connessioni'
+                        sh 'docker build --rm -t localhost:5000/recensioni ./recensioni'
+                        sh 'docker build --rm -t localhost:5000/recensioni-seguite ./recensioni-seguite'
+                        sh 'docker build --rm -t localhost:5000/apigateway ./api-gateway'
+
                         sh 'echo "finish docker build"'
+
                     }
+                stage('Push_Images'){
+                    steps{
+                        sh 'docker push localhost:5000/connessioni'
+                        sh 'docker push localhost:5000/recensioni'
+                        sh 'docker push localhost:5000/recensioni-seguite'
+                        sh 'docker push localhost:5000/apigateway'
+                    }
+                }
                 }
                 stage('Docker Operations') {
                     agent {
@@ -47,6 +63,14 @@ pipeline {
                                 sh 'docker --version'
                                 sh 'docker-compose --version'
                                 sh 'docker images'
+                            }
+                        }
+                        stage('Immage_pull'){
+                            steps{
+                                sh 'docker pull localhost:5000/connessioni'
+                                sh 'docker pull localhost:5000/recensioni'
+                                sh 'docker pull localhost:5000/recensioni-seguite'
+                                sh 'docker pull localhost:5000/apigateway'
                             }
                         }
                         stage('Docker Compose Up') {
