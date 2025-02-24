@@ -40,10 +40,10 @@ pipeline {
                 }
                 stage('Push Docker Images') {
                     steps {
-                        sh 'docker push http://$REGISTRY_PATH:5000/connessioni'
-                        sh 'docker push http://$REGISTRY_PATH:5000/recensioni'
-                        sh 'docker push http://$REGISTRY_PATH:5000/recensioni-seguite'
-                        sh 'docker push http://$REGISTRY_PATH:5000/apigateway'
+                        sh 'docker push $REGISTRY_PATH:5000/connessioni'
+                        sh 'docker push $REGISTRY_PATH:5000/recensioni'
+                        sh 'docker push $REGISTRY_PATH:5000/recensioni-seguite'
+                        sh 'docker push $REGISTRY_PATH:5000/apigateway'
                     }
                 }
             }
