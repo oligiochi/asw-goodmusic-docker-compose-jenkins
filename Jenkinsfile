@@ -1,6 +1,6 @@
 pipeline {
     agent { label 'registry' }
-    environment{
+    environment {
         REGISTRY_PATH = '172.17.0.1'
     }
 
@@ -65,10 +65,10 @@ pipeline {
                 }
                 stage('Pull Images') {
                     steps {
-                        sh 'docker pull localhost:5000/connessioni'
-                        sh 'docker pull localhost:5000/recensioni'
-                        sh 'docker pull localhost:5000/recensioni-seguite'
-                        sh 'docker pull localhost:5000/apigateway'
+                        sh 'docker pull $REGISTRY_PATH:5000/connessioni'
+                        sh 'docker pull $REGISTRY_PATH:5000/recensioni'
+                        sh 'docker pull $REGISTRY_PATH:5000/recensioni-seguite'
+                        sh 'docker pull $REGISTRY_PATH:5000/apigateway'
                     }
                 }
                 stage('Docker Compose Up') {
