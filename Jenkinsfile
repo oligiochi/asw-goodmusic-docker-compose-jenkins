@@ -9,6 +9,7 @@ pipeline {
             agent { label 'AWS-Vagrant' }
             environment {
                 PATH = "/usr/local/gradle/bin:$PATH"
+                REGISTRY_PATH = '10.0.2.2'
             }
             stages {
                 stage('Check Env') {
