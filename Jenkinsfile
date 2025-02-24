@@ -1,5 +1,8 @@
 pipeline {
     agent { label 'registry' }
+    environment{
+        REGISTRY_PATH = '172.17.0.1'
+    }
 
     stages {
         stage('Vagrant and Docker Operations') {
@@ -27,19 +30,19 @@ pipeline {
                 stage('Build Docker Images') {
                     steps {
                         sh 'echo "Start Docker build"'
-                        sh 'docker build --rm -t localhost:5000/connessioni ./connessioni'
-                        sh 'docker build --rm -t localhost:5000/recensioni ./recensioni'
-                        sh 'docker build --rm -t localhost:5000/recensioni-seguite ./recensioni-seguite'
-                        sh 'docker build --rm -t localhost:5000/apigateway ./api-gateway'
+                        sh 'docker build --rm -t $REGISTRY_PATH:5000/connessioni ./connessioni'
+                        sh 'docker build --rm -t $REGISTRY_PATH:5000/recensioni ./recensioni'
+                        sh 'docker build --rm -t $REGISTRY_PATH:5000/recensioni-seguite ./recensioni-seguite'
+                        sh 'docker build --rm -t $REGISTRY_PATH:5000/apigateway ./api-gateway'
                         sh 'echo "Finish Docker build"'
                     }
                 }
                 stage('Push Docker Images') {
                     steps {
-                        sh 'docker push localhost:5000/connessioni'
-                        sh 'docker push localhost:5000/recensioni'
-                        sh 'docker push localhost:5000/recensioni-seguite'
-                        sh 'docker push localhost:5000/apigateway'
+                        sh 'docker push $REGISTRY_PATH:5000/connessioni'
+                        sh 'docker push $REGISTRY_PATH:5000/recensioni'
+                        sh 'docker push $REGISTRY_PATH:5000/recensioni-seguite'
+                        sh 'docker push $REGISTRY_PATH:5000/apigateway'
                     }
                 }
             }
