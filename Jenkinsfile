@@ -2,6 +2,7 @@ pipeline {
     agent { label 'registry' }
     environment {
         REGISTRY_PATH = '172.17.0.1'
+        TAG='AWS-oligiovi'
     }
 
     stages {
@@ -31,19 +32,19 @@ pipeline {
                 stage('Build Docker Images') {
                     steps {
                         sh 'echo "Start Docker build"'
-                        sh 'docker build --rm -t $REGISTRY_PATH:5000/connessioni ./connessioni'
-                        sh 'docker build --rm -t $REGISTRY_PATH:5000/recensioni ./recensioni'
-                        sh 'docker build --rm -t $REGISTRY_PATH:5000/recensioni-seguite ./recensioni-seguite'
-                        sh 'docker build --rm -t $REGISTRY_PATH:5000/apigateway ./api-gateway'
+                        sh 'docker build --rm -t $TAG/connessioni ./connessioni'
+                        sh 'docker build --rm -t $TAG/recensioni ./recensioni'
+                        sh 'docker build --rm -t $TAG/recensioni-seguite ./recensioni-seguite'
+                        sh 'docker build --rm -t $TAG/apigateway ./api-gateway'
                         sh 'echo "Finish Docker build"'
                     }
                 }
                 stage('Push Docker Images') {
                     steps {
-                        sh 'docker push $REGISTRY_PATH:5000/connessioni'
-                        sh 'docker push $REGISTRY_PATH:5000/recensioni'
-                        sh 'docker push $REGISTRY_PATH:5000/recensioni-seguite'
-                        sh 'docker push $REGISTRY_PATH:5000/apigateway'
+                        sh 'docker push $REGISTRY_PATH/connessioni'
+                        sh 'docker push $REGISTRY_PATH/recensioni'
+                        sh 'docker push $REGISTRY_PATH/recensioni-seguite'
+                        sh 'docker push $REGISTRY_PATH/apigateway'
                     }
                 }
             }
@@ -66,10 +67,10 @@ pipeline {
                 }
                 stage('Pull Images') {
                     steps {
-                        sh 'docker pull $REGISTRY_PATH:5000/connessioni'
-                        sh 'docker pull $REGISTRY_PATH:5000/recensioni'
-                        sh 'docker pull $REGISTRY_PATH:5000/recensioni-seguite'
-                        sh 'docker pull $REGISTRY_PATH:5000/apigateway'
+                        sh 'docker pull $REGISTRY_PATH/connessioni'
+                        sh 'docker pull $REGISTRY_PATH/recensioni'
+                        sh 'docker pull $REGISTRY_PATH/recensioni-seguite'
+                        sh 'docker pull $REGISTRY_PATH/apigateway'
                     }
                 }
                 stage('Docker Compose Up') {
