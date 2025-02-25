@@ -32,10 +32,10 @@ pipeline {
                 stage('Build Docker Images') {
                     steps {
                         sh 'echo "Start Docker build"'
-                        sh 'docker build --rm -t $TAG/connessioni ./connessioni'
-                        sh 'docker build --rm -t $TAG/recensioni ./recensioni'
-                        sh 'docker build --rm -t $TAG/recensioni-seguite ./recensioni-seguite'
-                        sh 'docker build --rm -t $TAG/apigateway ./api-gateway'
+                        sh 'docker build --rm -t $REGISTRY_PATH/connessioni ./connessioni'
+                        sh 'docker build --rm -t $REGISTRY_PATH/recensioni ./recensioni'
+                        sh 'docker build --rm -t $REGISTRY_PATH/recensioni-seguite ./recensioni-seguite'
+                        sh 'docker build --rm -t $REGISTRY_PATH/apigateway ./api-gateway'
                         sh 'echo "Finish Docker build"'
                     }
                 }
