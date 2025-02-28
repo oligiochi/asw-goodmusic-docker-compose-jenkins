@@ -76,7 +76,7 @@ pipeline {
                 stage('Docker Compose Up') {
                     steps {
                         sh 'docker login $REGISTRY_PATH:$PORT -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-                        sh 'docker compose up -d'
+                        sh 'docker compose up -d --no-pull'
                     }
                 }
                 stage('Wait for Consul Services') {
