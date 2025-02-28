@@ -55,6 +55,8 @@ pipeline {
             agent { label 'local' }  // Nodo di test
             environment {
                 DOCKER_HOST='unix:///var/run/docker.sock'
+                DOCKER_USERNAME="tuo_username"
+                DOCKER_PASSWORD="tua_password"
             }
             stages {
                 stage('Docker Test') {
@@ -73,7 +75,7 @@ pipeline {
                 }
                 stage('Docker Compose Up') {
                     steps {
-                        sh 'docker login $REGISTRY_PATH:$PORT'
+                        sh 'docker login $REGISTRY_PATH:$PORT -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh 'docker compose up -d'
                     }
                 }
