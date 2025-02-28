@@ -54,7 +54,7 @@ pipeline {
         stage('Docker Operations') {
             agent {
                 docker {
-                    image 'docker:dind'
+                    image 'jenkins/agent:jenkins/agent:alpine'
                     args '--privileged --network=js_network'
                 }
             }
