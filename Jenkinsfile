@@ -73,7 +73,7 @@ pipeline {
                 }
                 stage('Docker Compose Up') {
                     steps {
-                        sh 'docker-compose up -d'
+                        sh 'docker compose up -d'
                     }
                 }
                 stage('Wait for Consul Services') {
@@ -112,7 +112,7 @@ pipeline {
                 stage('Docker Compose Down') {
                     steps {
                         sh 'echo "Stopping app"'
-                        sh 'docker-compose down'
+                        sh 'docker compose down'
                     }
                 }
             }
