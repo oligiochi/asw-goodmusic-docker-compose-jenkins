@@ -56,12 +56,6 @@ pipeline {
                 label 'Docker-cloud-alpine'
             }
             stages {
-                stage('Docker Test') {
-                    steps {
-                        sh 'docker --version'
-                        sh 'docker-compose --version'
-                    }
-                }
                 stage('Pull Images') {
                     steps {
                         sh 'docker pull $REGISTRY_PATH:$PORT/connessioni'
