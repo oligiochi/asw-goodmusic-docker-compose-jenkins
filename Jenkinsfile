@@ -62,7 +62,6 @@ pipeline {
                     steps {
                         sh 'docker --version'
                         sh 'docker-compose --version'
-                        sh 'docker images'
                     }
                 }
                 stage('Pull Images') {
