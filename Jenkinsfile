@@ -1,7 +1,8 @@
 pipeline {
     agent any
     environment {
-        REGISTRY_PATH = '172.17.0.1'
+        REGISTRY_PATH = '192.168.1.100'
+        PORT= '5000'
         TAG='AWS-oligiovi'
     }
 
@@ -54,7 +55,7 @@ pipeline {
             agent {
                 docker {
                     image 'docker:dind'
-                    args '--privileged'
+                    args '--privileged --network=js_network'
                 }
             }
             stages {
@@ -66,10 +67,10 @@ pipeline {
                 }
                 stage('Pull Images') {
                     steps {
-                        sh 'docker pull $REGISTRY_PATH/connessioni'
-                        sh 'docker pull $REGISTRY_PATH/recensioni'
-                        sh 'docker pull $REGISTRY_PATH/recensioni-seguite'
-                        sh 'docker pull $REGISTRY_PATH/apigateway'
+                        sh 'docker pull $REGISTRY_PATH:$PORT/connessioni'
+                        sh 'docker pull $REGISTRY_PATH:$PORT/recensioni'
+                        sh 'docker pull $REGISTRY_PATH:$PORT/recensioni-seguite'
+                        sh 'docker pull $REGISTRY_PATH:$PORT/apigateway'
                     }
                 }
                 stage('Docker Compose Up') {
