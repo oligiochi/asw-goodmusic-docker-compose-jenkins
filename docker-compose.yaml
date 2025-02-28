@@ -1,6 +1,6 @@
 services:
   connessioni:
-    image: connessioni:latest  # Usa l'immagine locale
+    image: 192.168.1.100:5000/connessioni:latest  # Usa l'immagine locale dal registro privato
     depends_on:
       - "consul"
       - "connessioni-db"
@@ -20,7 +20,7 @@ services:
 
 
   recensioni:
-    image: recensioni:latest  # Usa l'immagine locale
+    image: 192.168.1.100:5000/recensioni:latest  # Usa l'immagine locale dal registro privato
     depends_on:
       - "consul"
       - "recensioni-db"
@@ -40,7 +40,7 @@ services:
 
 
   recensioni-seguite:
-    image: recensioni-seguite:latest  # Usa l'immagine locale
+    image: 192.168.1.100:5000/recensioni-seguite:latest  # Usa l'immagine locale dal registro privato
     depends_on:
       - "consul"
       - "recensioni-seguite-db"
@@ -60,7 +60,7 @@ services:
     
 
   apigateway:
-    image: apigateway:latest  # Usa l'immagine locale
+    image: 192.168.1.100:5000/apigateway:latest  # Usa l'immagine locale dal registro privato
     ports:
       - "8080-8081:8080"
     depends_on:
