@@ -1,7 +1,6 @@
 services:
   connessioni:
-    build:
-      context: ./connessioni
+    image: connessioni:latest  # Usa l'immagine locale
     depends_on:
       - "consul"
       - "connessioni-db"
@@ -21,8 +20,7 @@ services:
 
 
   recensioni:
-    build:
-      context: ./recensioni
+    image: recensioni:latest  # Usa l'immagine locale
     depends_on:
       - "consul"
       - "recensioni-db"
@@ -42,8 +40,7 @@ services:
 
 
   recensioni-seguite:
-    build:
-      context: ./recensioni-seguite
+    image: recensioni-seguite:latest  # Usa l'immagine locale
     depends_on:
       - "consul"
       - "recensioni-seguite-db"
@@ -59,12 +56,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: recensioni-seguitedb
     volumes:
-    - "recensioni_seguite_db_data:/var/lib/postgresql/data"
+      - "recensioni_seguite_db_data:/var/lib/postgresql/data"
     
 
   apigateway:
-    build:
-      context: ./api-gateway
+    image: apigateway:latest  # Usa l'immagine locale
     ports:
       - "8080-8081:8080"
     depends_on:
