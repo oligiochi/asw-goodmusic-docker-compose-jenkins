@@ -53,10 +53,7 @@ pipeline {
         
         stage('Docker Operations') {
             agent {
-                docker {
-                    image 'jenkins/agent'
-                    args '--privileged --network=js_network'
-                }
+                label 'Docker-cloud'
             }
             stages {
                 stage('Docker Test') {
