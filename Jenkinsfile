@@ -8,7 +8,7 @@ pipeline {
 
     stages {
         stage('Vagrant and Docker Operations') {
-            agent { label 'AWS-Vagrant' }
+            agent { label 'AWS-Vagrant' }  // Specifica il nodo di build
             environment {
                 PATH = "/usr/local/gradle/bin:$PATH"
                 REGISTRY_PATH = '10.0.2.2'
@@ -50,11 +50,9 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Docker Operations') {
-            agent{
-                label 'local'
-            }
+            agent { label 'local' }  // Nodo di test
             environment {
                 DOCKER_HOST='unix:///var/run/docker.sock'
             }
