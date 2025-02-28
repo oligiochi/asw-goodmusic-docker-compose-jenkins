@@ -68,15 +68,27 @@ pipeline {
                 stage('Pull Images') {
                     steps {
                         sh 'docker pull $REGISTRY_PATH:$PORT/connessioni'
+                        sh 'docker tag $REGISTRY_PATH:$PORT/connessioni connessioni'
+                        sh 'docker rmi $REGISTRY_PATH:$PORT/connessioni'
+
                         sh 'docker pull $REGISTRY_PATH:$PORT/recensioni'
+                        sh 'docker tag $REGISTRY_PATH:$PORT/recensioni recensioni'
+                        sh 'docker rmi $REGISTRY_PATH:$PORT/recensioni'
+
                         sh 'docker pull $REGISTRY_PATH:$PORT/recensioni-seguite'
+                        sh 'docker tag $REGISTRY_PATH:$PORT/recensioni-seguite recensioni-seguite'
+                        sh 'docker rmi $REGISTRY_PATH:$PORT/recensioni-seguite'
+
                         sh 'docker pull $REGISTRY_PATH:$PORT/apigateway'
+                        sh 'docker tag $REGISTRY_PATH:$PORT/apigateway apigateway'
+                        sh 'docker rmi $REGISTRY_PATH:$PORT/apigateway'
+
                     }
                 }
                 stage('Docker Compose Up') {
                     steps {
                         sh 'docker login $REGISTRY_PATH:$PORT -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-                        sh 'docker compose up -d --no-pull'
+                        sh 'docker compose up -d'
                     }
                 }
                 stage('Wait for Consul Services') {
