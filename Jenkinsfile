@@ -52,7 +52,9 @@ pipeline {
         }
         
         stage('Docker Operations') {
-            agent any
+            agent{
+                label 'local'
+            }
             environment {
                 DOCKER_HOST='unix:///var/run/docker.sock'
             }
