@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'registry' }
+    agent any
     environment {
         REGISTRY_PATH = '172.17.0.1'
         TAG='AWS-oligiovi'
