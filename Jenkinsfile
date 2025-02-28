@@ -53,7 +53,7 @@ pipeline {
         
         stage('Docker Operations') {
             agent {
-                label 'Docker-cloud'
+                label 'Docker-cloud-alpine'
             }
             stages {
                 stage('Docker Test') {
