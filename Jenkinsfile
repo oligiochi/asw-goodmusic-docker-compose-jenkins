@@ -73,7 +73,7 @@ pipeline {
                 }
                 stage('Docker Compose Up') {
                     steps {
-                        sh 'docker compose up -d --no-cache'
+                        sh 'docker compose up -d'
                     }
                 }
                 stage('Wait for Consul Services') {
