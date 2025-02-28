@@ -73,6 +73,7 @@ pipeline {
                 }
                 stage('Docker Compose Up') {
                     steps {
+                        sh 'docker login $REGISTRY_PATH:$PORT'
                         sh 'docker compose up -d'
                     }
                 }
