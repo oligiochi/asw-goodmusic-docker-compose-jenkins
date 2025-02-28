@@ -53,9 +53,18 @@ pipeline {
         
         stage('Docker Operations') {
             agent {
-                label 'Docker-cloud-alpine'
+                label any
+            }
+            environment {
+                DOCKER_HOST='unix:///var/run/docker.sock'
             }
             stages {
+                stage('Docker Test') {
+                    steps {
+                        sh 'docker --version'
+                        sh 'docker-compose --version'
+                    }
+                }
                 stage('Pull Images') {
                     steps {
                         sh 'docker pull $REGISTRY_PATH:$PORT/connessioni'
