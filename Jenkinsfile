@@ -1,8 +1,8 @@
 pipeline {
-    agent any
+    agent any/*
     parameters {
         string(name: 'TAG', defaultValue: 'AWS-oligiovi', description: 'Tag da usare per le immagini Docker')
-    }
+    }*/
     environment {
         REGISTRY_PATH = '192.168.1.100'
         PORT = '5000'
