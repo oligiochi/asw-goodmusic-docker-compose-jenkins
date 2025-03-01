@@ -88,9 +88,9 @@ pipeline {
                             
                             images.each { img ->
                                 echo "Processing image ${img}"
-                                sh "docker pull ${REGISTRY_PATH}:${PORT}/${img}:${TAG}"
-                                sh "docker tag ${REGISTRY_PATH}:${PORT}/${img}:${TAG} ${img}:${TAG}"
-                                sh "docker rmi ${REGISTRY_PATH}:${PORT}/${img}:${TAG}"
+                                sh "docker pull $REGISTRY_PATH:$PORT/${img}"
+                                sh "docker tag $REGISTRY_PATH:$PORT/${img} ${img}"
+                                sh "docker rmi $REGISTRY_PATH:$PORT/${img}"
                             }
                         }
                     }
