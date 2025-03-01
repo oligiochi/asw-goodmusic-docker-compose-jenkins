@@ -60,9 +60,9 @@ pipeline {
         }
 
         stage('Docker Operations') {
-            agent { label 'local' }
+            agent { label 'Docker-cloud-docker' }
             environment {
-                DOCKER_HOST = 'unix:///var/run/docker.sock'
+                //DOCKER_HOST = 'unix:///var/run/docker.sock'
             }
             stages {
                 stage('Docker Test') {
@@ -127,7 +127,7 @@ pipeline {
         always {
             echo "Cleaning up workspace"
             cleanWs()
-            sh 'docker image prune -a -f'
+            //sh 'docker image prune -a -f'
         }
     }
 }
