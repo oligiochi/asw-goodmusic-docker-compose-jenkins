@@ -47,19 +47,9 @@ pipeline {
                             ]
                             
                             // Build e Push delle immagini con il tag passato come parametro
-                            /*images.each { img ->
-                                echo "Building image ${img.name} from context ${img.context}"
-                                sh "docker build --rm -t ${REGISTRY_PATH}/${img.name}:${TAG} ${img.context}"
-                                echo "Pushing image ${img.name}"
-                                sh "docker push ${REGISTRY_PATH}/${img.name}:${TAG}"
-                            }*/
-                            for (img in images) {
+                            images.each { img ->
                                 echo "Building image ${img.name} from context ${img.context}"
                                 sh "docker build --rm -t $REGISTRY_PATH/${img.name} ${img.context}"
-                            }
-                            
-                            // Push delle immagini
-                            for (img in images) {
                                 echo "Pushing image ${img.name}"
                                 sh "docker push $REGISTRY_PATH/${img.name}"
                             }
@@ -137,6 +127,7 @@ pipeline {
         always {
             echo "Cleaning up workspace"
             cleanWs()
+            sh 'docker image prune -a -f'
         }
     }
 }
