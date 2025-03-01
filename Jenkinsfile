@@ -90,6 +90,7 @@ pipeline {
                     steps {
                         sh 'docker login $REGISTRY_PATH:$PORT -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh 'docker compose up -d'
+                        sh "curl -s http://localhost:8500/v1/health/state/critical"
                     }
                 }
                 stage('Wait for Consul Services') {
@@ -97,7 +98,6 @@ pipeline {
                         CONSUL_URL = "http://localhost:8500/v1/health/state/critical"
                     }
                     steps {
-                        sh "curl -s http://localhost:8500/v1/health/state/critical"
                         script {
                             def maxRetries = 30
                             def retryInterval = 10
