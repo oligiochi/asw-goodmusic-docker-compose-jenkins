@@ -2,13 +2,13 @@ pipeline {
     agent any
     environment {
         REGISTRY_PATH = '192.168.1.100'
-        PORT= '5000'
-        TAG='AWS-oligiovi'
+        PORT = '5000'
+        TAG = 'AWS-oligiovi'
     }
 
     stages {
         stage('Vagrant and Docker Operations') {
-            agent { label 'AWS-Vagrant' }  // Specifica il nodo di build
+            agent { label 'AWS-Vagrant' }
             environment {
                 PATH = "/usr/local/gradle/bin:$PATH"
                 REGISTRY_PATH = '10.0.2.2'
@@ -30,33 +30,40 @@ pipeline {
                         sh 'echo "Finish Gradle build"'
                     }
                 }
-                stage('Build Docker Images') {
+                stage('Build and Push Docker Images') {
                     steps {
-                        sh 'echo "Start Docker build"'
-                        sh 'docker build --rm -t $REGISTRY_PATH/connessioni ./connessioni'
-                        sh 'docker build --rm -t $REGISTRY_PATH/recensioni ./recensioni'
-                        sh 'docker build --rm -t $REGISTRY_PATH/recensioni-seguite ./recensioni-seguite'
-                        sh 'docker build --rm -t $REGISTRY_PATH/apigateway ./api-gateway'
-                        sh 'echo "Finish Docker build"'
-                    }
-                }
-                stage('Push Docker Images') {
-                    steps {
-                        sh 'docker push $REGISTRY_PATH/connessioni'
-                        sh 'docker push $REGISTRY_PATH/recensioni'
-                        sh 'docker push $REGISTRY_PATH/recensioni-seguite'
-                        sh 'docker push $REGISTRY_PATH/apigateway'
+                        script {
+                            // Definiamo la mappa delle immagini con relativo contesto
+                            def images = [
+                                [name: 'connessioni',       context: './connessioni'],
+                                [name: 'recensioni',         context: './recensioni'],
+                                [name: 'recensioni-seguite', context: './recensioni-seguite'],
+                                [name: 'apigateway',         context: './api-gateway']
+                            ]
+                            
+                            // Build delle immagini
+                            for (img in images) {
+                                echo "Building image ${img.name} from context ${img.context}"
+                                sh "docker build --rm -t $REGISTRY_PATH/${img.name} ${img.context}"
+                            }
+                            
+                            // Push delle immagini
+                            for (img in images) {
+                                echo "Pushing image ${img.name}"
+                                sh "docker push $REGISTRY_PATH/${img.name}"
+                            }
+                        }
                     }
                 }
             }
         }
 
         stage('Docker Operations') {
-            agent { label 'local' }  // Nodo di test
+            agent { label 'local' }
             environment {
-                DOCKER_HOST='unix:///var/run/docker.sock'
-                DOCKER_USERNAME="tuo_username"
-                DOCKER_PASSWORD="tua_password"
+                DOCKER_HOST = 'unix:///var/run/docker.sock'
+                DOCKER_USERNAME = "tuo_username"
+                DOCKER_PASSWORD = "tua_password"
             }
             stages {
                 stage('Docker Test') {
@@ -65,24 +72,18 @@ pipeline {
                         sh 'docker compose version'
                     }
                 }
-                stage('Pull Images') {
+                stage('Pull, Tag and Remove Images') {
                     steps {
-                        sh 'docker pull $REGISTRY_PATH:$PORT/connessioni'
-                        sh 'docker tag $REGISTRY_PATH:$PORT/connessioni connessioni'
-                        sh 'docker rmi $REGISTRY_PATH:$PORT/connessioni'
-
-                        sh 'docker pull $REGISTRY_PATH:$PORT/recensioni'
-                        sh 'docker tag $REGISTRY_PATH:$PORT/recensioni recensioni'
-                        sh 'docker rmi $REGISTRY_PATH:$PORT/recensioni'
-
-                        sh 'docker pull $REGISTRY_PATH:$PORT/recensioni-seguite'
-                        sh 'docker tag $REGISTRY_PATH:$PORT/recensioni-seguite recensioni-seguite'
-                        sh 'docker rmi $REGISTRY_PATH:$PORT/recensioni-seguite'
-
-                        sh 'docker pull $REGISTRY_PATH:$PORT/apigateway'
-                        sh 'docker tag $REGISTRY_PATH:$PORT/apigateway apigateway'
-                        sh 'docker rmi $REGISTRY_PATH:$PORT/apigateway'
-
+                        script {
+                            def images = ['connessioni', 'recensioni', 'recensioni-seguite', 'apigateway']
+                            
+                            for (img in images) {
+                                echo "Processing image ${img}"
+                                sh "docker pull $REGISTRY_PATH:$PORT/${img}"
+                                sh "docker tag $REGISTRY_PATH:$PORT/${img} ${img}"
+                                sh "docker rmi $REGISTRY_PATH:$PORT/${img}"
+                            }
+                        }
                     }
                 }
                 stage('Docker Compose Up') {
