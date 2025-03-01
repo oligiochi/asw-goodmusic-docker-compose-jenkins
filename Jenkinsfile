@@ -104,6 +104,7 @@ pipeline {
 
                             while (attempt < maxRetries) {
                                 def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
+                                echo "Response from Consul: ${response}"
                                 if (!response.contains('"Status":"critical"')) {
                                     echo "✅ All services are healthy!"
                                     break
