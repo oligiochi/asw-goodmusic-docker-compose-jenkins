@@ -94,7 +94,7 @@ pipeline {
                 }
                 stage('Wait for Consul Services') {
                     environment {
-                        CONSUL_URL = "http://localhost:8500/v1/health/state/any"
+                        CONSUL_URL = "http://localhost:8500/v1/health/state/critical"
                     }
                     steps {
                         script {
@@ -104,12 +104,12 @@ pipeline {
 
                             while (attempt < maxRetries) {
                                 def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
-                                echo "Response from Consul: ${response}"
-                                if (!response.contains('"Status":"critical"')) {
+                                
+                                if (response == "[]") {
                                     echo "✅ All services are healthy!"
                                     break
                                 } else {
-                                    echo "⚠️ Some services are still critical. Retrying in ${retryInterval} seconds..."
+                                    echo "⚠️ Some services are still in critical state. Retrying in ${retryInterval} seconds..."
                                     attempt++
                                     sleep retryInterval
                                 }
