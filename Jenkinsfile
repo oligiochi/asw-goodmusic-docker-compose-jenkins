@@ -124,7 +124,7 @@ pipeline {
                 }
                 stage('Test API') {
                     steps {
-                        sh 'echo $(curl -s 192.168.1.102:2200/recensioni/recensioni) | jq .'
+                        sh 'curl -s 192.168.1.102:2200/recensioni/recensioni'
                     }
                 }
                 stage('Docker Compose Down') {
