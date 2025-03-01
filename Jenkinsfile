@@ -1,39 +1,44 @@
 pipeline {
     agent any
+    parameters {
+        string(name: 'TAG', defaultValue: 'AWS-oligiovi', description: 'Tag da usare per le immagini Docker')
+    }
     environment {
         REGISTRY_PATH = '192.168.1.100'
         PORT = '5000'
-        TAG = 'AWS-oligiovi'
     }
-
     stages {
         stage('Vagrant and Docker Operations') {
             agent { label 'AWS-Vagrant' }
             environment {
+                // Aggiorna il PATH per gradle
                 PATH = "/usr/local/gradle/bin:$PATH"
+                // Overwrite REGISTRY_PATH se necessario per questo nodo
                 REGISTRY_PATH = '10.0.2.2'
             }
             stages {
                 stage('Check Env') {
                     steps {
-                        sh 'echo "Running on $(hostname)"'
-                        sh 'whoami'
-                        sh 'echo "PATH: $PATH"'
-                        sh 'which gradle || echo "Gradle non trovato!"'
+                        sh '''
+                        echo "Running on $(hostname)"
+                        whoami
+                        echo "PATH: $PATH"
+                        which gradle || echo "Gradle non trovato!"
+                        '''
                     }
                 }
-                stage('Build_Gradle') {
+                stage('Build Gradle Project') {
                     steps {
                         sh 'gradle -v'
-                        sh 'echo "Start Gradle build"'
+                        echo "Start Gradle build"
                         sh 'gradle build'
-                        sh 'echo "Finish Gradle build"'
+                        echo "Finish Gradle build"
                     }
                 }
                 stage('Build and Push Docker Images') {
                     steps {
                         script {
-                            // Definiamo la mappa delle immagini con relativo contesto
+                            // Mappa delle immagini con relativi contesti
                             def images = [
                                 [name: 'connessioni',       context: './connessioni'],
                                 [name: 'recensioni',         context: './recensioni'],
@@ -41,16 +46,12 @@ pipeline {
                                 [name: 'apigateway',         context: './api-gateway']
                             ]
                             
-                            // Build delle immagini
-                            for (img in images) {
+                            // Build e Push delle immagini con il tag passato come parametro
+                            images.each { img ->
                                 echo "Building image ${img.name} from context ${img.context}"
-                                sh "docker build --rm -t $REGISTRY_PATH/${img.name} ${img.context}"
-                            }
-                            
-                            // Push delle immagini
-                            for (img in images) {
+                                sh "docker build --rm -t ${REGISTRY_PATH}/${img.name}:${TAG} ${img.context}"
                                 echo "Pushing image ${img.name}"
-                                sh "docker push $REGISTRY_PATH/${img.name}"
+                                sh "docker push ${REGISTRY_PATH}/${img.name}:${TAG}"
                             }
                         }
                     }
@@ -62,8 +63,6 @@ pipeline {
             agent { label 'local' }
             environment {
                 DOCKER_HOST = 'unix:///var/run/docker.sock'
-                DOCKER_USERNAME = "tuo_username"
-                DOCKER_PASSWORD = "tua_password"
             }
             stages {
                 stage('Docker Test') {
@@ -77,18 +76,17 @@ pipeline {
                         script {
                             def images = ['connessioni', 'recensioni', 'recensioni-seguite', 'apigateway']
                             
-                            for (img in images) {
+                            images.each { img ->
                                 echo "Processing image ${img}"
-                                sh "docker pull $REGISTRY_PATH:$PORT/${img}"
-                                sh "docker tag $REGISTRY_PATH:$PORT/${img} ${img}"
-                                sh "docker rmi $REGISTRY_PATH:$PORT/${img}"
+                                sh "docker pull ${REGISTRY_PATH}:${PORT}/${img}:${TAG}"
+                                sh "docker tag ${REGISTRY_PATH}:${PORT}/${img}:${TAG} ${img}:${TAG}"
+                                sh "docker rmi ${REGISTRY_PATH}:${PORT}/${img}:${TAG}"
                             }
                         }
                     }
                 }
                 stage('Docker Compose Up') {
                     steps {
-                        sh 'docker login $REGISTRY_PATH:$PORT -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh 'docker compose up -d'
                         sh "hostname -I | awk '{print \$1}'"
                     }
@@ -99,26 +97,13 @@ pipeline {
                     }
                     steps {
                         script {
-                            def maxRetries = 30
-                            def retryInterval = 10
-                            def attempt = 0
-                            
-                            while (attempt < maxRetries) {
+                            // Attende che Consul restituisca una risposta vuota, con timeout di 300 secondi
+                            waitUntil(initialRecurrencePeriod: 10000, timeout: 300) {
                                 def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
                                 echo "Response from Consul: ${response}"
-                                if (response == "[]") {
-                                    echo "✅ All services are healthy!"
-                                    break
-                                } else {
-                                    echo "⚠️ Some services are still in critical state. Retrying in ${retryInterval} seconds..."
-                                    attempt++
-                                    sleep retryInterval
-                                }
+                                return response == "[]"
                             }
-
-                            if (attempt == maxRetries) {
-                                error("❌ Services did not reach passing state within the timeout period!")
-                            }
+                            echo "✅ All services are healthy!"
                         }
                     }
                 }
@@ -131,11 +116,17 @@ pipeline {
                 }
                 stage('Docker Compose Down') {
                     steps {
-                        sh 'echo "Stopping app"'
+                        echo "Stopping app"
                         sh 'docker compose down'
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+            echo "Cleaning up workspace"
+            cleanWs()
         }
     }
 }
