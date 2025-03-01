@@ -101,10 +101,10 @@ pipeline {
                             def maxRetries = 30
                             def retryInterval = 10
                             def attempt = 0
-
+                            
                             while (attempt < maxRetries) {
-                                def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
-                                
+                                def response = sh(script: "curl -s http://localhost:8500/v1/health/state/critical", returnStdout: true).trim()
+                                echo "Response from Consul: ${response}"
                                 if (response == "[]") {
                                     echo "✅ All services are healthy!"
                                     break
