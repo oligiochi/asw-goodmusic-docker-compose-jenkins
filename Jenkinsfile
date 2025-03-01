@@ -97,6 +97,7 @@ pipeline {
                         CONSUL_URL = "http://localhost:8500/v1/health/state/critical"
                     }
                     steps {
+                        sh "curl -s http://localhost:8500/v1/health/state/critical"
                         script {
                             def maxRetries = 30
                             def retryInterval = 10
