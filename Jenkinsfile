@@ -124,7 +124,9 @@ pipeline {
                 }
                 stage('Test API') {
                     steps {
-                        sh 'curl -s 192.168.1.102:8081/recensioni/recensioni | jq .'
+                        sh '''
+                        curl -s 192.168.1.102:8081/recensioni/recensioni | jq . || echo "jq non disponibile, risposta grezza: $(curl -s 192.168.1.102:8081/recensioni/recensioni)"
+                        '''
                     }
                 }
                 stage('Docker Compose Down') {
