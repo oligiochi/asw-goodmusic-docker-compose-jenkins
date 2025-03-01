@@ -91,12 +91,11 @@ pipeline {
                         sh 'docker login $REGISTRY_PATH:$PORT -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh 'docker compose up -d'
                         sh "hostname -I | awk '{print \$1}'"
-                        sh "curl -s http://localhost:8500/v1/health/state/critical"
                     }
                 }
                 stage('Wait for Consul Services') {
                     environment {
-                        CONSUL_URL = "http://localhost:8500/v1/health/state/critical"
+                        CONSUL_URL = "http://192.168.1.102:8500/v1/health/state/critical"
                     }
                     steps {
                         script {
@@ -105,7 +104,7 @@ pipeline {
                             def attempt = 0
                             
                             while (attempt < maxRetries) {
-                                def response = sh(script: "curl -s http://localhost:8500/v1/health/state/critical", returnStdout: true).trim()
+                                def response = sh(script: "curl -s ${CONSUL_URL}", returnStdout: true).trim()
                                 echo "Response from Consul: ${response}"
                                 if (response == "[]") {
                                     echo "✅ All services are healthy!"
