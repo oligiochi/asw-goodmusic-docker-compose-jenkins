@@ -90,6 +90,7 @@ pipeline {
                     steps {
                         sh 'docker login $REGISTRY_PATH:$PORT -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                         sh 'docker compose up -d'
+                        sh "hostname -I | awk '{print $1}'"
                         sh "curl -s http://localhost:8500/v1/health/state/critical"
                     }
                 }
